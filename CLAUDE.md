@@ -1,17 +1,19 @@
 # CLAUDE.md — Rasid: Smart Port & Maritime Congestion Predictor
 
-> Persistent project memory for Claude Code sessions. Keep this file short and current; details live in `claude/`.
-> Last updated: 2026-10-06
+> Persistent project memory for Claude Code sessions. Keep this file short and current; details live in `docs/`.
+> Last updated: 2026-10-07
 
 **Working name:** Rasid (راصد — Arabic for "observer"), taken from the project folder name. *Confirm with team.*
 **Formal title:** Smart Port & Maritime Congestion Predictor — An AIS-Based Predictive Data Engineering & MLOps Pipeline for Egyptian Maritime Gateways.
 
 ## What this is
 
-- **Goal:** forecast near-term vessel congestion (anchorage waiting time + a congestion index) at the Port Said / northern Suez Canal approach, 6–24 h ahead, so operators plan *before* the queue forms.
+- **Goal:** forecast near-term vessel congestion (how many ships wait at anchorage, and for how long) **6–12 h ahead** at the Port Said / Suez Canal approaches, so operators plan *before* the queue forms.
 - **Problem:** congestion at Egyptian gateways is handled reactively. Waiting at anchorage costs demurrage, detention, fuel, and missed downstream logistics.
-- **Key design decision:** both features *and* ground-truth labels are derived from AIS alone. DBSCAN + convex hull find the anchorage and berth zones, then nav status + speed + timestamps give the waiting times. This follows Peng et al. (2023), so no port-authority data is needed.
-- **Novel contribution:** this AIS congestion method applied to Egyptian gateways, plus real-time streaming and production MLOps (feature store, registry, drift monitoring, rollback). The proposal claims nobody has combined these for this corridor.
+- **Two ports, one pipeline (decision D-008):**
+  - **Port Said / Suez Canal (main analysis):** trained and backtested on **Global Fishing Watch** satellite AIS (hourly per ship, 2017 → ~5 days ago). Labels are derived from AIS: anchorage occupancy and dwell, following Peng et al. (2023). The data isn't live, so the demo uses the replay simulator.
+  - **Alexandria (live showcase):** the **Alexandria Port Authority** public ship board, polled every 30 min (official arrival, berthing and departure times), plus GFW Alexandria history. Live predictions follow a 4–6 week side-by-side overlap.
+- **Novel contribution:** AIS-derived congestion forecasting for Egyptian gateways, plus streaming and production MLOps (feature store, registry, drift monitoring, rollback).
 - **Two identities:** it is a DE + MLOps graduation project *and* a product candidate. Make decisions that serve both.
 
 ## Academic context
@@ -31,13 +33,23 @@
 | Alhassan Mohamed | Data Engineer | Workstream TBD |
 | Reem Adel | Data Engineer | Workstream TBD |
 
-Workstreams W1–W5 are defined in `claude/roadmap.md`. **Gap:** the proposal assigns no one to modeling and evaluation (W4). Assign an owner.
+Workstreams W1–W5 are defined in `docs/roadmap.md`. **Gap:** the proposal assigns no one to modeling and evaluation (W4). Assign an owner.
+
+## Data sources (D-008, decided 2026-10-07): free only, no paid data, no hardware
+
+| Source | Port | Role | Notes |
+|---|---|---|---|
+| Global Fishing Watch, AIS vessel presence | Port Said / Suez + Alexandria | Training, labels, backtests | CC BY-NC 4.0 (non-commercial). ~5-day latency. Validated (Ever Given test). Coarse vessel types |
+| Alexandria Port Authority board (`spsonlinealex.apa.gov.eg`) | Alexandria | **Live** source | No API (web extraction, TLS chain completed manually), no history until collected, messy legacy records; written permission requested via the supervisor |
+| IMF PortWatch, Suez Canal Authority | Suez / ports | Validation | Daily / monthly counts; the two disagree on trend, so cite SCA for official totals |
+| Open-Meteo | All | Weather features | Free, non-commercial |
+| ~~aisstream.io~~ | — | Dropped | 0% coverage of Egyptian waters (tested 2026-10-06) |
 
 ## Tech stack (as proposed in Sep 2026)
 
 | Layer | Tools |
 |---|---|
-| Ingestion | Python WebSocket client (aisstream.io) → Apache Kafka |
+| Ingestion | Python collectors (one adapter per source: Port Authority board, GFW, PortWatch/SCA, weather) → Apache Kafka |
 | Stream processing | Spark Structured Streaming (PySpark) |
 | Storage | Medallion Bronze/Silver/Gold: Parquet on object storage + PostgreSQL |
 | Orchestration | Apache Airflow |
@@ -47,54 +59,66 @@ Workstreams W1–W5 are defined in `claude/roadmap.md`. **Gap:** the proposal as
 | Registry / tracking | MLflow |
 | Serving | FastAPI (containerized) |
 | Monitoring / DQ | Evidently AI, Great Expectations |
-| Dashboard | Kibana *or* Grafana *or* Streamlit (undecided) |
+| Dashboard | Grafana (ops) + Streamlit or React+Leaflet (product) — see P-003 |
 | Infra / CI | Docker Compose, GitHub Actions |
 
-Proposed changes are pending team approval in `claude/decision-log.md` (P-001…P-010). The main ones: drop Cassandra and ELK, add MinIO + PostGIS, and change "drift → rollback" to "drift → retrain, regression → rollback".
+Proposed changes are pending team approval in `docs/decision-log.md` (P-001…P-010). The main ones: drop Cassandra and ELK, add MinIO + PostGIS, and change "drift → rollback" to "drift → retrain, regression → rollback".
 
 ## Architecture in one breath
 
-Live AIS → collector → Kafka → Spark streaming → shared `features/` library → Feast online store (Redis) → FastAPI → map dashboard.
-Bronze history → Airflow → same `features/` library → Gold → Feast offline store → training → MLflow registry (`@champion`/`@challenger`).
-Prediction logs + matured labels → monitoring → retrain trigger or alias rollback. A replay simulator re-streams recorded Bronze data for tests and the demo.
-Full detail: `claude/architecture.md`.
+Port Authority board (every 30 min) → collector → Kafka → Spark streaming → shared `features/` library → Feast online store (Redis) → FastAPI → map dashboard.
+GFW daily pull + history → Bronze → Airflow → same `features/` library → Gold → Feast offline store → training → MLflow registry (`@champion`/`@challenger`).
+Prediction logs + matured labels → monitoring → retrain trigger or alias rollback. The replay simulator re-streams GFW/Bronze history for the Port Said demo and tests.
+Full detail: `docs/architecture.md`.
 
 ## Conventions (proposed — confirm at kickoff)
 
 - Python 3.11. `ruff` for lint and format, `pytest`, `pre-commit`, type hints on public functions.
-- **Time in UTC, ISO-8601.** Coordinates in WGS84 (EPSG:4326). Speed in knots, distance in nautical miles.
+- **Time in UTC, ISO-8601.** Coordinates in WGS84 (EPSG:4326). Speed in knots, distance in nautical miles. Port Authority times are Cairo local (DST-aware): convert on ingest.
 - **Bronze is immutable raw data.** Partition everything by `date=YYYY-MM-DD/hour=HH`. Use Parquet with zstd.
 - **Feature logic lives only in `features/`** and is imported by *both* the batch and streaming jobs. Never re-implement a feature elsewhere.
 - **No synthetic data in training or evaluation, ever.** Synthetic data is only for load tests.
 - **Time-based splits only.** Every model is reported against the baselines (persistence, seasonal-naive, convoy heuristic).
-- Secrets live in `.env` (gitignored). Commit a `.env.example`.
+- Secrets live in `.env` (gitignored): `AISSTREAM_API_KEY`, `GFW_API_TOKEN`. Never paste keys in chat or commit them.
 - Git: short-lived branches (`feat/`, `fix/`, `data/`, `docs/`), PR + 1 review, Conventional Commits.
-- Any non-trivial decision gets an entry in `claude/decision-log.md`.
+- Any non-trivial decision gets an entry in `docs/decision-log.md`.
 
 ## Hard constraints
 
-- **aisstream.io:** free, **no SLA, events not durably replayed**, max 3 connections per account and per IP, commercial terms unpublished. **Measured coverage of Egyptian waters ≈ 0% (2026-10-06).** Persist raw data immediately and never depend on it for history.
-- Budget ≈ zero. Optional paid backfill is ~€80/month (Datalastic / DataDocked).
+- **GitHub is docs-only (D-009):** the repo (https://github.com/mohamed-mahmoud-de/RASID, public) holds only `docs/`, `README.md`, `CLAUDE.md` and `.gitignore` until the supervisor has reviewed the documents. **Never push code** (`collector/`, `quality/`, `requirements.txt`, `.env.example` are gitignored).
+- **No paid data, no hardware** (team decision 2026-10-06).
+- GFW is non-commercial only (CC BY-NC 4.0, attribution "Powered by Global Fishing Watch").
+- Poll the Port Authority board politely: ≥ 2 s between requests, at most every 30 min, project named in the User-Agent. Never publish raw scraped data.
 - The whole stack must run under docker-compose on one 16 GB machine, using profiles.
 - SAR / satellite imagery is out of scope.
 
-## Current status (2026-10-06)
+## Current status (2026-10-07)
 
-- Done: proposal (.docx), project brief (.md), 10-slide deck (Gamma PDF).
-- Done: `collector/capture_sample.py` (aisstream → Bronze NDJSON), `collector/summarize_sample.py`, `collector/build_viz_data.py`. API key in `.env` (gitignored).
-- Done: IMF PortWatch reference data in `data/reference/` (Suez daily transits, 1 year; Port Said/Damietta/Alexandria daily port calls).
-- 🚨 **Blocking finding (2026-10-06):** aisstream.io has **~0% coverage of Egyptian waters**. In live tests, zero vessels appeared at Port Said, the canal, Damietta, Alexandria, or the Red Sea, while PortWatch reports ~40 transits/day. Its receivers in the region are in south Turkey, Cyprus, and Israel. The data-source decision is open as **O-007** in `claude/decision-log.md` (own receiver vs. paid API vs. re-scope to Alexandria).
-- Not started: git repo, continuous collection (pointless on aisstream until O-007 is decided).
+- Docs: proposal, brief and deck in `docs/proposal/`; planning docs in `docs/`; reports in `docs/reports/`.
+- Data-source research done. Every free live AIS feed has 0% Egypt coverage; full catalog in `docs/data-sources.md`.
+- Local code (not on GitHub):
+  - `collector/apa_scraper.py`: Port Authority board → `data/bronze/apa/`
+  - `collector/fetch_gfw.py`: GFW presence per named area → `data/bronze/gfw/`, `data/silver/gfw/`
+  - `collector/fetch_portwatch.py`
+  - `quality/dq_report.py` → `docs/reports/data_quality_report.md`
+- **GFW validated:** Port Said covered 24/24 h (~100–130 vessels/h in the port box). **Ever Given 2021:** waiting ships went from ~15 to a peak of 160 (`docs/reports/gfw-validation.md`). Alexandria also covered (~22 stationary ships outside the port per hour).
+- **Port Authority board facts:**
+  - 40/76 in-port records are > 60 days old (open since 2011–2017).
+  - `تاريخ الرسو` looks like the *latest* berth move.
+  - Local craft use placeholder IMOs.
+  - Berth `مخطاف داخلي` = inner-anchorage queue.
+  - The board doesn't show the outer-anchorage queue GFW sees, so the overlap period is needed.
+- **Next:** 30-min board poller + daily GFW pull on an always-on machine (O-004); GFW Port Said backfill 2017 → now; anchorage zones and vessel-type enrichment; supervisor letter to APA.
 
 ## Next milestones
 
 | ID | Target date | Milestone |
 |---|---|---|
-| G1 | 2026-10-19 | Collector live 24/7; coverage go/no-go vs IMF PortWatch; target definition locked |
-| M1 | 2026-11-29 | Thin slice on real data: zones → labels → features → XGBoost beats baselines → FastAPI → map |
-| M2 | 2027-01-24 | Streaming features via Feast; batch/stream parity test green in CI |
+| G1 | 2026-10-19 | Board poller + daily GFW pull running 24/7; Port Said history backfilled; target definition (O-001) locked |
+| M1 | 2026-11-29 | Thin slice on real data (Port Said, GFW): zones → labels → features → XGBoost beats baselines → FastAPI → map |
+| M2 | 2027-01-24 | Streaming features via Feast (Alexandria live); batch/stream parity test green in CI; overlap analysis done |
 | M3 | 2027-03-21 | Closed MLOps loop demonstrated (drift → retrain, regression → rollback) + SHAP |
-| M4 | 2027-05-09 | Feature freeze; backtests; pilot/customer evidence |
+| M4 | 2027-05-09 | Feature freeze; backtests (incl. Ever Given); pilot/customer evidence |
 | M5 | ~2027-06 | Thesis + defense (date TBC) |
 
 ## Known errors in submitted materials (fix before the next submission)
@@ -105,27 +129,31 @@ Full detail: `claude/architecture.md`.
 4. **Peng citation:** it should read Peng, W., Bai, X., Yang, D., Yuen, K. F., & Wu, J. (**2023**), *Maritime Policy & Management*, 50(7), 835–860. The proposal has "Peng, P. … 2022".
 5. **PLOS One paper** (Chico et al., 2025, doi:10.1371/journal.pone.0320129): the zone near Port Said is the **North Anchorage**. The South Anchorage is near Suez port. The proposal has this backwards.
 6. **"5.89 days median wait"** (deck slide 2): no source found, and it is not in the PLOS paper. Cite it or remove it.
-7. **Leftover scope:** the proposal's risk table says "if Alexandria alone is too sparse". The scope is Port Said.
-8. **Ever Given backtest:** this needs 2021 vessel-level AIS, which is not freely available. Buy the data window or replace the claim (see decision log O-003).
-9. The Kaggle AIS backfill probably doesn't cover Suez. Most public AIS sets are US or Danish.
-10. The MIT thesis (Budiman, 2024) reference has not been verified yet.
+7. **Leftover scope:** the proposal's risk table says "if Alexandria alone is too sparse". After D-008 Alexandria is the live showcase, so rewrite that risk.
+8. **Data sources are out of date:** the proposal names aisstream.io + Kaggle as the AIS sources. Replace with D-008 (GFW for Port Said/Suez, the Port Authority board for Alexandria; aisstream has 0% Egypt coverage). The Ever Given backtest is now **feasible for free** via GFW.
+9. The MIT thesis (Budiman, 2024) reference has not been verified yet.
 
 ## Context files
 
-- `claude/maritime-101.md` — **start here if you're new to shipping**: plain-English explanation of every maritime term
-- `claude/project-context.md` — domain primer, 2026 Suez situation, glossary, literature, competitors
-- `claude/architecture.md` — components, data flow, medallion schemas, API contract, repo layout, deployment
-- `claude/data-and-mlops.md` — data sources, coverage validation, cleaning, labels, features, models, evaluation, MLOps loop
-- `claude/roadmap.md` — phases, workstreams, task checklists, decision gates
-- `claude/decision-log.md` — decided / proposed / open decisions (ADR-lite)
-- `claude/meeting-notes.md` — meeting template and log
-- `claude/strategy.md` — commercialization, enterprise, startup, production roadmap, team process
+- `docs/README.md` — index and reading order for the supervisor
+- `docs/maritime-101.md` — **start here if you're new to shipping**: plain-English explanation of every maritime term
+- `docs/data-sources.md` — **catalog of Port Said / Suez data sources** (free vs. paid, real-time vs. historical, tested vs. documented)
+- `docs/project-context.md` — domain primer, 2026 Suez situation, glossary, literature, competitors
+- `docs/architecture.md` — components, data flow, medallion schemas, API contract, repo layout, deployment
+- `docs/data-and-mlops.md` — data sources, cleaning, labels, features, models, evaluation, MLOps loop
+- `docs/roadmap.md` — phases, workstreams, task checklists, decision gates
+- `docs/decision-log.md` — decided / proposed / open decisions (ADR-lite) and test results
+- `docs/meeting-notes.md` — meeting template and log
+- `docs/strategy.md` — commercialization, enterprise, startup, production roadmap, team process
+- `docs/reports/` — data-quality report (Port Authority board + PortWatch), GFW validation, figures
+- `docs/proposal/` — original proposal (.docx), brief (.md), deck (.pdf)
 
 ## Instructions for Claude
 
 - Treat this as a real product. Be direct, practical, and ambitious, and challenge weak assumptions.
-- **The team has no maritime background.** Explain shipping terms in plain English the first time they appear, or point to `claude/maritime-101.md`. Don't assume they know AIS, ETA, demurrage, anchorage, etc.
-- Check `claude/decision-log.md` before proposing stack or design changes. Log new decisions there.
-- Never invent statistics. Any number that goes into the deck or thesis needs a source. Use the corrected citations in `claude/project-context.md`.
+- **The team has no maritime background.** Explain shipping terms in plain English the first time they appear, or point to `docs/maritime-101.md`. Don't assume they know AIS, ETA, demurrage, anchorage, etc.
+- Check `docs/decision-log.md` before proposing stack or design changes. Log new decisions there.
+- **Never push code to GitHub** until the supervisor approves (D-009). Before any push, verify that only docs are tracked and that no secrets are present.
+- Never invent statistics. Any number that goes into the deck or thesis needs a source. Use the corrected citations in `docs/project-context.md`.
 - Never use synthetic data for training or evaluation.
 - Update the "Current status" and milestone sections of this file when they change.

@@ -20,7 +20,9 @@
 - **2026 recovery:** a gradual, service-by-service return.
   - Maersk, MSC, CMA CGM, Hapag-Lloyd, and COSCO have moved selected loops back.
   - Maersk resumed the ME11 service via Suez in mid-February 2026.
-  - Trade press reports August 2026 at 1,358 transits (+27% YoY) and USD 567.1 M revenue (+56.7% YoY). **⚠ Not confirmed by IMF PortWatch.** PortWatch (pulled 2026-10-06) shows a flat **~40–43 transits/day every month from Oct 2025 to Sep 2026**: Aug 2026 ≈ 41/day, last-30-day mean 40.4, range 21–55. The difference may be methodology (PortWatch counts cargo/tanker classes only). **Use PortWatch figures in the deck and thesis**, not the press number.
+  - Trade press reports August 2026 at 1,358 transits (+27% YoY) and USD 567.1 M revenue (+56.7% YoY). The baseline **is consistent with official SCA data**: the SCA 2025 annual report gives Aug 2025 = 1,070 vessels, and 2025 months ranged 864–1,160 (≈28–39/day).
+  - **But the two series disagree:** IMF PortWatch (pulled 2026-10-06) shows a flat ~40–43/day from Oct 2025 to Sep 2026. In Oct 2025 PortWatch says ≈41/day while SCA says ≈36/day; in Aug 2026 PortWatch says ≈41/day while SCA says ≈44/day.
+  - Methodologies differ: PortWatch is AIS-derived, while SCA counts official transits. **Cite SCA for official totals; use PortWatch only for daily resolution, and always label which source you use.** The source disagreement is itself a validation finding worth reporting in the thesis.
   - Returns are conditional on security. The corridor is still a listed war-risk area, and carriers keep Cape contingencies.
 - **Implications:**
   1. **Non-stationarity is guaranteed.** The traffic regime is shifting *during* our collection window. This is a gift for the MLOps story: drift monitoring and retraining become necessary, not decorative. It is also a risk: report metrics per regime.

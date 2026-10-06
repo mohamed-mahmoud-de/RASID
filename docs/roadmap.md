@@ -19,12 +19,16 @@ The four Data Engineers (Youssef Nasser, Youssef Elkomy, Alhassan Mohamed, Reem 
 
 ## Phase 0 — Foundations (Oct 6 → Oct 19, 2026) → Gate G1
 
-- [ ] **Collector running 24/7 on an always-on VM**, writing hourly NDJSON.gz to disk or object storage, auto-restart via systemd/Docker `restart: always` *(W1, day 1–3)*
-- [ ] Private GitHub repo, branch protection, pre-commit (ruff), CI skeleton, `.env.example`, `CLAUDE.md` + `claude/` committed *(W5)*
-- [x] Coverage validation vs IMF PortWatch → **preliminary result: aisstream ≈ 0% coverage of Egypt** (2026-10-06, see decision log) *(W3)*
-- [ ] Re-run the 10-min coverage capture at a different time of day to confirm *(W1)*
-- [ ] Decide **O-007** (data source for Egyptian waters): price a paid API trial; spec an own-receiver kit (RTL-SDR + 162 MHz antenna + Pi + AIS-catcher); find a rooftop in Alexandria and a host in Port Said *(lead + W1)*
-- [ ] Plot two weeks of positions on a map, eyeball the anchorages, draft gate lines *(W3)*
+- [x] Coverage validation vs IMF PortWatch → **aisstream ≈ 0% coverage of Egypt** (2026-10-06) *(W3)*
+- [x] Free-data deep search; **GFW validated** on Port Said (incl. the Ever Given 2021 test) and Alexandria; Alexandria board scraper and data-quality report done (2026-10-07)
+- [x] **Data-source decision D-008** (GFW for Port Said/Suez training; Alexandria board live + GFW history; PortWatch/SCA validation) *(team)*
+- [x] GitHub repo set up as **docs-only** for supervisor review (D-009) *(lead)*
+- [ ] **Alexandria board poller running every 30 min, 24/7**, on an always-on machine (O-004) *(W1, now: every day not collected is lost)*
+- [ ] **Daily GFW pull** for Port Said anchorage, Suez Bay and Alexandria; **backfill GFW history 2017 → now** for Port Said *(W1/W3)*
+- [ ] Supervisor letter to the Alexandria Port Authority: permission + historical data export *(lead + Prof. Kholief)*
+- [ ] Confirm board field meanings ("actual arrival", "berthing date") with APA or a shipping agent *(W3)*
+- [ ] Define anchorage zones (DBSCAN on GFW stationary positions + the GFW anchorages dataset); fix vessel types (GFW "OTHER" → cargo/tanker/service) *(W3)*
+- [ ] Start the 4–6 week **side-by-side overlap** (board vs GFW, Alexandria) to align features before live predictions *(W3/W4)*
 - [ ] Decide O-001 (target queue) and O-002 (horizons) *(all)*
 - [ ] Fix the errors in submitted materials (see `CLAUDE.md`) and send the corrected proposal to the supervisor *(lead)*
 - [ ] Assign W1–W4 owners and backups *(all)*

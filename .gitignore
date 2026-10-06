@@ -1,5 +1,14 @@
+# Secrets and data — never commit
 .env
 data/
 __pycache__/
 *.pyc
 .venv/
+
+# D-009: the GitHub repo is docs-only until the supervisor approves the documents.
+# Code and config templates stay local.
+collector/
+quality/
+requirements.txt
+.env.example
+docs/reports/*.json

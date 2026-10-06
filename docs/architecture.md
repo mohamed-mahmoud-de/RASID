@@ -1,18 +1,24 @@
 # Architecture
 
-Status: **target design**. Nothing is built yet. Items marked (P-xxx) depend on proposed decisions in `decision-log.md`.
+Status: **target design**. Collectors and data-quality checks are prototyped; the pipeline isn't built yet. Data sources follow **decision D-008** (`decision-log.md`). Items marked (P-xxx) depend on proposed decisions.
+
+**Two ports, one pipeline:**
+- **Port Said / Suez** (main analysis) runs on GFW history (~5 days late), so it's batch-trained and backtested, with a replay-simulator demo.
+- **Alexandria** (live showcase) runs on the Port Authority board, polled live, plus GFW history for training.
 
 ## 1. Data flow
 
 ```
-                         ┌────────────────────── STREAMING PATH ──────────────────────┐
- aisstream.io ──WSS──▶ collector ──▶ Kafka topic ais.raw ──▶ Spark Structured Streaming
- (live AIS, no SLA)     │ reconnect+backoff                    │ parse · clean · dedupe
-                        │ writes raw NDJSON                    │ features/ (shared lib)
-                        ▼                                      ├──▶ Silver positions (Parquet)
-                 BRONZE (MinIO, immutable)                     └──▶ Feast push ──▶ Redis (online store)
-                        ▲
- replay simulator ──────┘ reads Bronze → Kafka at N× speed (tests, demo, drift injection)
+ SOURCES (D-008)                          ┌──────────────── STREAMING PATH ────────────────┐
+ Alexandria Port Authority board ──poll 30 min──▶ apa collector ──▶ Kafka apa.events ──▶ Spark Structured Streaming
+   (live, official: expected / in-port /         │ snapshot diff → events            │ parse · clean · features/ (shared)
+    departed, arrival + berthing times)          ▼                                    ├──▶ Silver (Parquet)
+ Open-Meteo (live weather) ─────────────────▶ BRONZE (MinIO, immutable)               └──▶ Feast push ──▶ Redis (online)
+                                                 ▲
+ replay simulator ───────────────────────────────┘ re-streams Bronze/GFW history → Kafka (Port Said demo, tests, drift injection)
+
+ Global Fishing Watch (hourly AIS presence, Port Said + Alexandria, ~5 days late) ──daily pull──▶ BRONZE
+ IMF PortWatch (daily) · Suez Canal Authority (monthly + daily bulletins) ──────────daily pull──▶ BRONZE (validation)
 
                          ┌──────────────────── BATCH PATH (Airflow) ───────────────────┐
                          │ Bronze → Silver backfill · GE quality gates                │
@@ -32,7 +38,7 @@ Status: **target design**. Nothing is built yet. Items marked (P-xxx) depend on 
 
 | # | Component | Responsibility | Tech | Workstream |
 |---|---|---|---|---|
-| 1 | Collector | WebSocket subscribe (bbox + message types), reconnect with exponential backoff, write raw NDJSON per hour, publish to Kafka. **Runs 24/7 from day 1, even before Kafka exists** (P-006) | Python `websockets`, `confluent-kafka` | W1 |
+| 1 | Collectors (D-008) | **One adapter per source:**<br>• `apa_board`: polls the Alexandria Port Authority board every 30 min (JSF pagination, TLS verified); stores raw snapshots; emits change events (arrived / berthed / departed / newly expected)<br>• `gfw`: daily pull of GFW hourly per-vessel presence for named areas (Port Said anchorage, Suez Bay, Alexandria)<br>• `portwatch`, `sca`: daily validation series<br>• `weather`: Open-Meteo<br>• Future: a live AIS adapter if a feed becomes available (paid API / own receiver); nothing downstream changes<br>Each adapter writes Bronze and publishes to Kafka with a `source` field. **Runs 24/7** (P-006, O-004) | Python `requests`, `beautifulsoup4`, `confluent-kafka` | W1 |
 | 2 | Kafka | Durable buffer between ingestion and processing. Topics: `ais.raw`, `ais.clean`, `predictions` | Kafka 4.x (KRaft, single broker in dev) | W1 |
 | 3 | Stream processor | Parse/clean/dedupe, update vessel state, compute rolling zone features with `features/`, push to Feast | Spark Structured Streaming | W1 |
 | 4 | Object storage | Bronze/Silver/Gold Parquet; S3-compatible, so cloud migration is a config change (P-004) | MinIO | W2 |
@@ -104,7 +110,7 @@ rasid/
 ├── quality/          # Great Expectations suites
 ├── infra/            # docker-compose.yml (+ profiles), configs, Makefile
 ├── tests/            # unit + integration (parity test, replay fixtures)
-├── claude/           # project docs (this folder)
+├── docs/             # project documents (this folder)
 └── CLAUDE.md
 ```
 

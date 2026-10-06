@@ -18,7 +18,7 @@ None of us come from shipping. This page explains every shipping word we use, wi
 
 - Every large ship must carry an **AIS transponder**, a box that keeps broadcasting by radio: *who I am, where I am, how fast I'm going, which way*.
 - Picture every ship constantly shouting its GPS location, like the car dots in the Uber app.
-- The radio signal reaches roughly **40–70 km** (further from a high antenna). Antennas on the coast, and satellites, pick it up.
+- The radio signal only travels as far as the horizon, so **height is everything**. An antenna 15 m up hears ships ~28–37 km away; 20 m up, ~46 km; a hilltop or tower can reach 75–110 km. Antennas on the coast, and satellites, pick it up.
 - Services like **aisstream.io** collect what volunteer antennas hear and stream it to us.
 - **Our test (Oct 6, 2026):** no antenna near Egypt feeds aisstream, so we hear nothing from Egyptian waters. It's like a radio that can't pick up the station.
 
@@ -111,9 +111,16 @@ None of us come from shipping. This page explains every shipping word we use, wi
 
 We judge ships by **how they move** (speed + location), not by what the crew typed, because the typed fields are unreliable.
 
-## The coverage problem and the options
+## Where our data comes from (decided 2026-10-07)
 
-The free feed can't hear Egypt. Three ways to fix it:
-- **A. Build our own antenna (~$100):** a USB radio stick + antenna + small computer on a high rooftop near the sea in Alexandria. It hears ships within roughly 40–70 km. Port Said is ~230 km from Alexandria, which is too far for this.
-- **B. Pay a data company (~€80/month)** that already has antennas near Port Said.
-- **C. Start the project with Alexandria** instead of Port Said, using our own antenna.
+The free live feed (aisstream.io) can't hear Egypt; its antennas are in Turkey, Cyprus and Israel. We chose **free sources only** (no paid data, no hardware):
+
+- **Port Said and the Suez Canal: Global Fishing Watch.** Satellites pick up every ship's AIS signal. We get one position per ship per hour, going back years, but about **5 days late**.
+  - That's perfect for **teaching and testing** the model. We proved it shows the 2021 Ever Given queue: about 15 waiting ships normally, **160** at the peak.
+  - It can't power live predictions, so the Port Said demo **replays** real past data.
+- **Alexandria: the Port Authority's public ship board.** Live and official: which ships are expected, which are in port (with arrival and docking times), and which have left. We record it every 30 minutes.
+  - It has no history, so we also learn from Global Fishing Watch's Alexandria data.
+  - After 4–6 weeks of collecting both side by side, Alexandria gets **live** predictions.
+- **For checking our numbers:** IMF PortWatch (daily ship counts) and the Suez Canal Authority (official monthly totals).
+
+Options we considered and set aside: building our own antenna (~$100, Alexandria only) and paying a data company (~€15–80/month). Either one would add live Port Said data later, with no other changes to the pipeline.

@@ -24,6 +24,8 @@ Everything here is a hypothesis to validate with customers. None of it is establ
   - (a) a licensed feed (Spire, ORBCOMM, MarineTraffic/Kpler API, Datalastic, etc.), with a region-only license to control cost;
   - (b) **our own terrestrial AIS receivers** at Port Said/Alexandria/Damietta (low-cost hardware). Better local coverage, a proprietary stream, and data-exchange rights with aggregators such as AISHub. Check Egyptian (NTRA) rules for receive-only radio equipment first.
 - **Weather:** Open-Meteo requires a paid plan for commercial use.
+- **Global Fishing Watch** (the thesis's Port Said source, D-008) is **CC BY-NC 4.0, non-commercial only**, and has no public commercial license. A product must switch Port Said to a licensed feed. The pipeline is adapter-based, so that's a collector swap, not a redesign.
+- **The Alexandria Port Authority board** has no published reuse terms. A product needs a formal data agreement with APA.
 - **COGS:** AIS licensing becomes the main cost of goods. Model it before setting prices.
 
 ## 2. Enterprise adoption: what makes companies buy
@@ -91,7 +93,7 @@ Everything here is a hypothesis to validate with customers. None of it is establ
 - One chat channel (Discord/Slack/WhatsApp) with a `#alerts` channel for pipeline alerts
 - The shared always-on VM
 - MLflow as the experiment notebook
-- `CLAUDE.md` + `claude/` as the source of truth, used with Claude Code
+- `CLAUDE.md` + `docs/` as the source of truth, used with Claude Code
 
 **Engineering practices:**
 - Trunk-based development: short-lived branches, PR + 1 review, Conventional Commits.

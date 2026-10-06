@@ -1,18 +1,19 @@
 # Data Pipeline & MLOps Notes
 
-## 1. Data sources
+## 1. Data sources (decision D-008, 2026-10-07)
 
-| Source | Use | Facts & risks | Priority |
-|---|---|---|---|
-| **aisstream.io** (WebSocket) | Live AIS | Free. "No SLA or uptime guarantee, events are not durably replayed." 3 subscribed connections/account, 3 open/IP, subscription must be sent within 3 s. Messages are dropped if the consumer is slow. Commercial terms not published | Primary live |
-| **Self-collected Bronze** | Training history | Only exists from the day the collector starts. ~6 months by April 2027 ≈ 4,300 hourly samples per zone | Primary training |
-| **IMF PortWatch** | Daily Suez transit calls + daily port calls (2019→), CSV export | Free, AIS-derived (UN Global Platform). Daily granularity only | Coverage validation, daily-level backtests, regime context |
-| **Open-Meteo** (forecast + marine APIs) | Wind, gusts, wave height | Free for non-commercial use; commercial use needs a paid plan | Features |
-| SCA monthly navigation stats | Official monthly transits | Coarse | Sanity check |
-| Kaggle AIS | Backfill | Most public AIS sets are US (MarineCadastre) or Danish (DMA). **Probably no Suez coverage; verify before spending time** | Low |
-| Datalastic / DataDocked (~€80/mo) | Paid historical | Only if a specific window is needed (e.g. March 2021 for the Ever Given backtest) | Optional |
+| Source | Port | Use | Facts & risks | Role |
+|---|---|---|---|---|
+| **Global Fishing Watch, AIS vessel presence** | Port Said / Suez + Alexandria | Hourly per-vessel positions (~1 km cells), 2017 → ~5 days ago | Free, CC BY-NC 4.0 (non-commercial). **Validated:** Port Said 24/24 h coverage, ~100–130 vessels/h; the Ever Given queue spike was captured (baseline ~15 → peak 160 waiting ships). Coarse vessel types (57% "OTHER") | **Primary training / labels / backtests** |
+| **Alexandria Port Authority board** | Alexandria | Live expected / in-port / departed ships with official arrival, berthing, departure times, cargo | Free and public, but no API (web extraction) and permission is being requested. Messy legacy records. No history until we collect it | **Primary live source** (Alexandria) |
+| **IMF PortWatch** | Suez + Port Said / Alexandria / Damietta | Daily transits / port calls (2019 →) | Free; daily only; trend disagrees with SCA | Validation, daily context |
+| **Suez Canal Authority** | Suez | Monthly official totals (reports), daily bulletins (press) | Official; no waiting-time data | Validation |
+| **Open-Meteo** (forecast + marine) | All | Wind, gusts, wave height | Free (non-commercial) | Features |
+| ~~aisstream.io~~ | — | — | **Dropped: 0% coverage of Egyptian waters** (tested 2026-10-06) | — |
 
-### Collector subscription (start wide, model narrow)
+The sections below about the aisstream collector and gate G1 are kept as a **record of the coverage test** that led to D-008. The cleaning rules and the observed AIS facts still apply to any AIS source, GFW included.
+
+### Collector subscription (start wide, model narrow) — historical (aisstream test)
 
 - **Bbox A (core):** lat 29.8–31.8, lon 31.7–32.9. Port Said approaches, the canal, and Suez bay.
 - **Bbox B (approaches + other gateways):** lat 30.8–33.5, lon 29.5–34.5. Alexandria, Damietta, and the Med approach lanes.
@@ -65,6 +66,10 @@
 - **Class B (small craft) is ~half the messages** (pleasure 37, sailing 36). Filter out for congestion modeling.
 
 ## 3. Labels: the most important design work
+
+**By port (D-008):**
+- **Port Said / Suez:** labels are derived from **GFW hourly presence**. Occupancy = vessels stationary in the anchorage zone each hour; an episode = consecutive stationary hours of one vessel in the zone (1-hour resolution, ~1 km cells). The episode rules below apply at hourly granularity.
+- **Alexandria:** labels come from **official times** on the Port Authority board (arrival → berthing → departure). They're reconstructed from 30-minute snapshot diffs, because the board's "berthing date" looks like the *latest* berth move (see `reports/data_quality_report.md`).
 
 **Anchorage episode (per vessel):**
 - **Start:** the first point inside an anchorage polygon with SOG < 1 kn, sustained ≥ 30 min. NavStatus = 1 supports this but is not required.
