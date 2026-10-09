@@ -85,7 +85,7 @@ Full detail: `docs/architecture.md`.
 
 ## Hard constraints
 
-- **GitHub is docs-only (D-009):** the repo (https://github.com/mohamed-mahmoud-de/RASID, public) holds only `docs/`, `README.md`, `CLAUDE.md` and `.gitignore` until the supervisor has reviewed the documents. **Never push code** (`collector/`, `quality/`, `requirements.txt`, `.env.example` are gitignored).
+- **GitHub is docs-only (D-009):** the repo (https://github.com/mohamed-mahmoud-de/RASID, public) holds only `docs/`, `brand/` (images + `BRAND.md`), `README.md`, `CLAUDE.md` and `.gitignore` until the supervisor has reviewed the documents. **Never push code** (`collector/`, `quality/`, `requirements.txt`, `.env.example`, `brand/*.py`, `*.blend` are gitignored).
 - **No paid data, no hardware** (team decision 2026-10-06).
 - GFW is non-commercial only (CC BY-NC 4.0, attribution "Powered by Global Fishing Watch").
 - Poll the Port Authority board politely: ≥ 2 s between requests, at most every 30 min, project named in the User-Agent. Never publish raw scraped data.
@@ -147,6 +147,7 @@ Full detail: `docs/architecture.md`.
 - `docs/strategy.md` — commercialization, enterprise, startup, production roadmap, team process
 - `docs/reports/` — data-quality report (Port Authority board + PortWatch), GFW validation, figures
 - `docs/proposal/` — original proposal (.docx), brief (.md), deck (.pdf)
+- `brand/BRAND.md` — logo, colours, fonts, which file to use where. **Official logo:** `brand/rasid_logo_circle.png` (covers, slides); `brand/rasid_logo_circle_small.png` (document headers, top-left ~2.5 cm)
 
 ## Instructions for Claude
 
