@@ -17,3 +17,6 @@ docs/reports/*.json
 brand/*.py
 *.blend
 *.blend1
+
+# Local document build scripts (not documents)
+build/

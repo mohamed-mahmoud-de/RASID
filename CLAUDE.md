@@ -1,7 +1,7 @@
 # CLAUDE.md — Rasid: Smart Port & Maritime Congestion Predictor
 
 > Persistent project memory for Claude Code sessions. Keep this file short and current; details live in `docs/`.
-> Last updated: 2026-10-07
+> Last updated: 2026-10-14
 
 **Working name:** Rasid (راصد — Arabic for "observer"), taken from the project folder name. *Confirm with team.*
 **Formal title:** Smart Port & Maritime Congestion Predictor — An AIS-Based Predictive Data Engineering & MLOps Pipeline for Egyptian Maritime Gateways.
@@ -18,20 +18,22 @@
 
 ## Academic context
 
-- Alexandria University, **Faculty of Science, SIM (Software Industry & Multimedia) Department**
+- **Alexandria University — Faculty of Science — Software Industry and Multimedia (SIM) Department** (confirmed 2026-10-09; use exactly this wording)
 - Supervisor: **Prof. Mohamed Kholief**
 - Department requirement: Data Engineering + MLOps project
 - Academic year 2026/27. Defense date TBC, roadmap assumes ~June 2027.
 
-## Team (authoritative roster: 5 people)
+## Team (authoritative roster: 5 people, confirmed 2026-10-09)
+
+Use these names, roles and this order in every document.
 
 | Member | Role | Owns |
 |---|---|---|
-| Mohamed Mahmoud | **Team Leader**, Data Engineer & MLOps Engineer | W5 MLOps & platform; integration; supervisor liaison |
+| Mohamed Mahmoud | **Team Lead** — MLOps Engineer & Data Engineer | W5 MLOps & platform; integration; supervisor liaison |
+| Reem Adel | Data Engineer | Workstream TBD |
+| Alhassan Mohamed | Data Engineer | Workstream TBD |
 | Youssef Nasser | Data Engineer | Workstream TBD |
 | Youssef Elkomy | Data Engineer | Workstream TBD |
-| Alhassan Mohamed | Data Engineer | Workstream TBD |
-| Reem Adel | Data Engineer | Workstream TBD |
 
 Workstreams W1–W5 are defined in `docs/roadmap.md`. **Gap:** the proposal assigns no one to modeling and evaluation (W4). Assign an owner.
 
@@ -94,7 +96,7 @@ Full detail: `docs/architecture.md`.
 
 ## Current status (2026-10-07)
 
-- Docs: proposal, brief and deck in `docs/proposal/`; planning docs in `docs/`; reports in `docs/reports/`.
+- Docs: **proposal v2 (2026-10-14)** at `docs/proposal/proposal.pdf`: one document with problem statement, solution, competitor analysis and the full SRS requirement list (24 pages). The editable .docx is rebuilt from `build/proposal/` (gitignored); the old Gamma deck and brief were deleted (still in git history). Planning docs in `docs/`; reports in `docs/reports/`.
 - Data-source research done. Every free live AIS feed has 0% Egypt coverage; full catalog in `docs/data-sources.md`.
 - Local code (not on GitHub):
   - `collector/apa_scraper.py`: Port Authority board → `data/bronze/apa/`
@@ -121,17 +123,11 @@ Full detail: `docs/architecture.md`.
 | M4 | 2027-05-09 | Feature freeze; backtests (incl. Ever Given); pilot/customer evidence |
 | M5 | ~2027-06 | Thesis + defense (date TBC) |
 
-## Known errors in submitted materials (fix before the next submission)
+## Known errors in submitted materials
 
-1. **Team size:** the proposal lists 6 names, with "Mohamed Mahmoud" appearing twice ("Mohamed Mahmoud Ahmed" and "Mohamed Mahmoud (Zane) — MLOps Lead"). The brief says 6 and the deck says "6 People" but shows 4 DE + 1 MLOps. The real team is **5**.
-2. **Faculty:** the proposal cover says "Faculty of Computer & Data Science". It should be **Faculty of Science, SIM Department**.
-3. **Names to confirm:** "Ream Adel Mohamed" vs Reem Adel; "Youssef Mohamed Mostafa", assumed to be Youssef Elkomy.
-4. **Peng citation:** it should read Peng, W., Bai, X., Yang, D., Yuen, K. F., & Wu, J. (**2023**), *Maritime Policy & Management*, 50(7), 835–860. The proposal has "Peng, P. … 2022".
-5. **PLOS One paper** (Chico et al., 2025, doi:10.1371/journal.pone.0320129): the zone near Port Said is the **North Anchorage**. The South Anchorage is near Suez port. The proposal has this backwards.
-6. **"5.89 days median wait"** (deck slide 2): no source found, and it is not in the PLOS paper. Cite it or remove it.
-7. **Leftover scope:** the proposal's risk table says "if Alexandria alone is too sparse". After D-008 Alexandria is the live showcase, so rewrite that risk.
-8. **Data sources are out of date:** the proposal names aisstream.io + Kaggle as the AIS sources. Replace with D-008 (GFW for Port Said/Suez, the Port Authority board for Alexandria; aisstream has 0% Egypt coverage). The Ever Given backtest is now **feasible for free** via GFW.
-9. The MIT thesis (Budiman, 2024) reference has not been verified yet.
+All fixed. The 9 errors in the first proposal were corrected on 2026-10-09; the proposal was merged into one document on 2026-10-14 (team problem statement + team competitor analysis + SRS requirements, logo v2). The old Gamma deck (unsourced "5.89 days" figure, "6 People") and the old brief (aisstream.io data sources) were deleted on 2026-10-14; a new deck must be built from the current proposal, not from them.
+
+**Still missing:** the UI prototype (team, Figma); the planned screens S1–S9 in proposal §4.2 are placeholders. The proposal source (.docx) is rebuilt with `build/proposal/` (`node build_proposal.js` then `finalize.ps1`).
 
 ## Context files
 
@@ -146,8 +142,8 @@ Full detail: `docs/architecture.md`.
 - `docs/meeting-notes.md` — meeting template and log
 - `docs/strategy.md` — commercialization, enterprise, startup, production roadmap, team process
 - `docs/reports/` — data-quality report (Port Authority board + PortWatch), GFW validation, figures
-- `docs/proposal/` — original proposal (.docx), brief (.md), deck (.pdf)
-- `brand/BRAND.md` — logo, colours, fonts, which file to use where. **Official logo:** `brand/rasid_logo_circle.png` (covers, slides); `brand/rasid_logo_circle_small.png` (document headers, top-left ~2.5 cm)
+- `docs/proposal/proposal.pdf` — **the graduation project proposal** (problem statement, solution, competitor analysis, 149 requirements)
+- `brand/BRAND.md` — logo, colours, fonts, which file to use where. **Official logo (v2, radar mark + Outfit capitals):** `brand/rasid_logo_v2.png` (covers, slides), `brand/rasid_logo_v2_horizontal.png` (document headers), `brand/rasid_appicon_v2.png` (avatar). v1 logo files deleted 2026-10-14
 
 ## Instructions for Claude
 

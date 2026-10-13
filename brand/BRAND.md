@@ -1,49 +1,43 @@
-# rasid — Brand Notes
+# RASID — Brand Notes
 
-## The idea
+## The idea (logo v2, official since 14 Oct 2026)
 
-**rasid** (راصد) means *observer*. The project watches ships to predict congestion. The logo is a lowercase wordmark where **the dot of the "i" is a container ship** heading right, toward the "d" and toward what comes next, which is what forecasting is about.
-
-- **It reads first as a word,** and the ship is the detail you notice second. That's the difference between a designed mark and clip-art.
-- **The ship is one solid silhouette:** hull with a raked bow, three container stacks, and the bridge tower at the stern. Gaps between the stacks match the letters' rhythm.
-- **Exact alignments:** the top of the bridge lines up with the top of the "d", and the gap between ship and "i" follows the font's own dot spacing.
-- **Rejected along the way:** the ship as the "I" (it read as a rocket or bullet), the "D" as a hull (it read as a ▷ play button), and a top-view ship dot (it read as a pencil or bullet). A ship's side profile is the only view that's unambiguous at small sizes.
+**Rasid** (راصد) means *observer*. The mark is a **radar scope**: an outer ring, a blue sweep covering the first 60° from north, a faint inner range ring, the radar at the centre and one contact (a ship) on the inner ring. It says "we watch the approaches and see ships coming" in one shape. The wordmark is **RASID** in Outfit SemiBold capitals.
 
 ## Colors
 
 | Name | Hex | Use |
 |---|---|---|
-| Deep navy | `#0E2238` | Wordmark on light backgrounds; dark backgrounds |
-| Signal orange | `#D4602A` | The ship, the one accent: maritime safety orange (lifeboats, buoys) |
-| Ivory | `#F4F0E8` | Wordmark on dark backgrounds |
-| Warm gray | `#C9C3BA` | Studio / neutral surfaces |
-
-Rule: **orange is only ever the ship.** Never color letters orange.
+| Navy | `#121C2C` | Mark and wordmark on light backgrounds; dark backgrounds |
+| Signal blue | `#0F5C8A` | The radar sweep (the one accent); blue backgrounds; document headings |
+| Mist | `#E1E5EC` | Inner range ring on light backgrounds |
+| Light | `#F4F5F9` | Neutral panels, table zebra rows |
+| White | `#FFFFFF` | Mark and wordmark on navy or blue (sweep at 42% white, inner ring at 25% white) |
 
 ## Typography
 
-- **Bahnschrift** (Windows system font, DIN-style). Its technical, signage character fits maritime and data.
-- Logo weight: Regular, with a slight outline bevel for presence.
-- Body text in documents: any clean sans-serif (Segoe UI, Inter).
+- **Outfit** SemiBold (600) for the wordmark. Free under the SIL Open Font License; the file used to build the logo is `build/fonts/Outfit-VF.ttf` (not committed).
+- Documents: Calibri or any clean sans-serif for body text.
 
 ## Files (`brand/`)
 
 | File | Use |
 |---|---|
-| `rasid_logo_flat_light.png` | Main logo on white / light backgrounds (transparent PNG) |
-| `rasid_logo_flat_dark.png` | Logo on dark backgrounds (transparent PNG) |
-| `rasid_mark.png` | App icon / avatar / favicon source (ship on a navy tile) |
-| `rasid_logo_3d.png`, `rasid_logo_3d_dark.png` | Hero images for slides, the README banner, the defense deck |
-| `rasid_logo.blend`, `rasid_logo_dark.blend` | Editable Blender scenes |
-| `rasid_logo.py` | Regenerates everything: `blender -b --factory-startup -P brand/rasid_logo.py [-- --dark]` |
-| `rasid_logo_circle.svg`, `.png` | **Official emblem.** The wordmark in a navy instrument dial: satin metal bezel, a radar sweep aimed at the ship, bearing ticks, wake lines, and a lettered ring ("MARITIME CONGESTION PREDICTOR" / راصد). For cover pages, title slides and posters: anything wider than ~4 cm |
-| `rasid_logo_circle_small.svg`, `.png` | The same emblem without the lettered ring, which is unreadable when small. For **document headers (top-left, ~2.5 cm)**, avatars, and anything 1–4 cm wide |
-| `rasid_logo_circle.py` | Regenerates both emblems (needs only `fontTools`; reads ship geometry, colours and font from `rasid_logo.py`): `python brand/rasid_logo_circle.py`. PNGs (2000 px, transparent corners) are rendered from the SVGs with headless Edge |
+| `rasid_logo_v2.svg`, `.png` | **Main logo**: mark above RASID, for white or light backgrounds (cover pages, title slides) |
+| `rasid_logo_v2_dark.svg`, `.png` | The same for navy or blue backgrounds |
+| `rasid_logo_v2_horizontal.svg`, `.png` | Mark beside RASID: **document headers** and slide footers |
+| `rasid_icon_v2.svg`, `.png` | Mark only |
+| `rasid_appicon_v2.svg`, `.png` | Mark on a navy rounded tile: avatar, favicon (readable down to 16 px) |
+| `rasid_logo_v2.py` | Regenerates the SVGs: `python brand/rasid_logo_v2.py`. PNGs are rendered from the SVGs with headless Edge at 4× |
 
-The emblems are the one place the brand uses gradients and a soft lift shadow: they imitate a physical instrument. The flat wordmark rules below still apply everywhere else.
+The v2 logo was rebuilt as a vector from the approved design sheet (`Chosen_navy_Outfit_capitals`), so it stays sharp at any print size.
 
 ## Don'ts
 
-- Don't stretch the logo, add shadows or outlines to the flat logo, or put the navy version on dark photos.
-- Don't separate the ship from the "i" in the wordmark. On its own, the ship is only used as the app icon.
-- Keep clear space around the logo of at least the width of the ship on all sides.
+- Don't stretch the logo or recolour the sweep in anything other than signal blue (or translucent white on dark).
+- Don't put the navy version on dark photos; use the dark version.
+- Keep clear space around the logo of at least the radius of the mark on all sides.
+
+## History
+
+v1 (7–9 Oct 2026) was a lowercase "rasid" wordmark with a container ship as the dot of the "i", plus circular instrument emblems built from it. Its files were deleted on 14 Oct 2026; the committed ones remain in git history.

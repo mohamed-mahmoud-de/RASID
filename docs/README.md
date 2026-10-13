@@ -6,7 +6,7 @@ Documents for supervisor review (Prof. Mohamed Kholief). Code is kept out of the
 
 | # | Document | What it covers |
 |---|---|---|
-| 1 | [proposal/](proposal/) | Original submission: proposal (.docx), project brief (.md), presentation deck (.pdf) |
+| 1 | [proposal/proposal.pdf](proposal/proposal.pdf) | **Graduation project proposal**: problem statement, proposed solution, competitor analysis and the software requirements list |
 | 2 | [maritime-101.md](maritime-101.md) | Plain-English guide to every shipping term used in the project |
 | 3 | [decision-log.md](decision-log.md) | All decisions (incl. **D-008: data sources**), test results, open questions |
 | 4 | [data-sources.md](data-sources.md) | Catalog of every Port Said / Suez data source we evaluated: free vs. paid, live vs. historical, tested vs. documented |

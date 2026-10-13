@@ -67,8 +67,7 @@ Reading to add (search before citing): AIS-based port-call detection, ETA/waitin
 - **Open source:** `gabrielfuenmar/suez-canal-transits` (transit extraction, no ML), `yossef1222/suez-blockage-analytics` (synthetic data).
 - **Honest positioning:** "no localized, production-grade *predictive* system for Egyptian gateways", **not** "no competition". Congestion *dashboards* are commoditized. The wedge is localized forecasts plus decisions delivered in the customer's workflow (see `strategy.md`).
 
-## 6. Source material in this folder
+## 6. Source material
 
-- `congestion-predictor-brief.md` — project & business brief (Sep 16, 2026)
-- `Smart-Port-Congestion-Predictor-Proposal.docx` — formal 15-section proposal (Sep 18, 2026)
-- `Smart-Port-and-Maritime-Congestion-Predictor.pdf` — 10-slide Gamma deck (Sep 18, 2026). Remove the "Made with Gamma" badge for the defense version.
+- `proposal/proposal.pdf` — the graduation project proposal (Oct 14, 2026): problem statement, solution, competitor analysis and the software requirements list.
+- The first submission (Sep 2026: brief, 15-section proposal and Gamma deck) is in git history only. It contained the errors listed in `CLAUDE.md` and was replaced by the proposal above.
